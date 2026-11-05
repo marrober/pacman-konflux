@@ -1,4 +1,4 @@
-FROM source-image
+FROM registry.access.redhat.com/ubi9/nodejs-20:latest
 USER 0
 COPY . /opt/app-root/src/
 WORKDIR /opt/app-root/src/

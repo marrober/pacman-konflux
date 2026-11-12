@@ -216,17 +216,20 @@ spec:
       - name: output
         workspace: resources
     workspaces:
-    - name: workspace
+    - name: resources
   taskRunTemplate:
     serviceAccountName: pipeline
   workspaces:
-  - name: workspace
+  - name: resources
     volumeClaimTemplate:
-      metadata: {}
+      metadata:
+        creationTimestamp: null
+        labels:
+          tekton.dev/pipeline: pacman
       spec:
         accessModes:
         - ReadWriteOnce
         resources:
           requests:
-            storage: 5Gi
+            storage: 1Gi
         storageClassName: lvms-vg1

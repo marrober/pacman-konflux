@@ -1,0 +1,236 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  annotations:
+    build.appstudio.openshift.io/repo: https://github.com/marrober/pacman-konflux?rev={{revision}}
+    build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/target_branch: '{{target_branch}}'
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
+    pipelinesascode.tekton.dev/max-keep-runs: "3"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "main"
+  labels:
+    appstudio.openshift.io/application: pacman
+    appstudio.openshift.io/component: pacman
+    pipelines.appstudio.openshift.io/type: build
+  name: pacman-full
+  namespace: pacman-konflux-ci
+spec:
+  params:
+    - name: GIT_REPO
+      value: '{{source_url}}'
+    - name: GIT_REVISION
+      value: '{{revision}}'
+    - name: GIT_REPO_NAME
+      value: pacman-konflux
+      ## Verify git commit parameters
+    - name: certificate-identity
+      value: ".*"
+      # value: $(tt.params.git-committer)
+    - name: oidc-issuer
+      value: https://keycloak-keycloak-system.apps.ocp4.mr-openshift.co.uk/auth/realms/openshift
+    - name: rekor-url
+      value: http://rekor-server.trusted-artifact-signer.svc
+    - name: tuf-mirror
+      value: http://tuf.trusted-artifact-signer.svc
+    - name: tuf-root-hash
+      value: "f9a974355acffb8c3036e52380becaf797f97edc13bf6041400904955625c24a"
+      ## Image build parameters
+    - name: IMAGE_NAME
+      value: default-route-openshift-image-registry.apps.ocp4.mr-openshift.co.uk/$(context.taskRun.namespace)/pacman
+    - name: IMAGE_SHORT_NAME
+      value: pacman
+    - name: PATH_CONTEXT
+      value: $(params.GIT_REPO_NAME)/src
+    - name: STORAGE_DRIVER
+      value: vfs   
+    - name: TLSVERIFY
+      value: false
+    - name: node_js_image_repo
+      # value: registry.redhat.io/rhel9
+      value: registry.access.redhat.com/hi
+      # value: default-route-openshift-image-registry.apps.ocp4.mr-openshift.co.uk/pacman-ci
+    - name: node_js_short_name
+      # value: nodejs-22
+      value: nodejs
+    - name: node_js_image_name
+      # value: nodejs-22
+      value: nodejs
+    - name: node_js_image_tag    
+      # value: 1-1777524498
+      # value: 1-1777916853
+      # value: nodejs-22-1-177 # Version in the Cluster image registry in the pacman-ci namespace with the name nodejs
+      value: '22.23.3'
+    - name: image-build-namespace
+      value: $(context.taskRun.namespace)
+      ## Image validation parameters
+    - name: acs_central_endpoint
+      value: acs-secret
+    - name: acs_api_token
+      value: acs-secret
+    - name: roxctl-output-format
+      value: "table"
+      ## Update Argocd application and commit to GitHub
+    - name: repo_type
+      value: github.com
+    - name: cd-git-url
+      value: marrober/pacman
+    - name: cd-git-repo-name
+      value: pacman
+    - name: cd-git-repo-path-to-content-development
+      value: cd/env/01-dev
+    - name: cd-git-commit-comment-dev
+      value: "Update from ci process - dev"
+    - name: cd-git-user-name
+      value: "Mark Roberts"
+    - name: cd-git-user-email
+      value: "mroberts@redhat.com"
+    - name: argocd-project-name-development
+      value: "pacman-dev-01"
+    - name: argocd-revision
+      value: "main"
+    - name: argocd-version
+      value: "v3.5.3"
+    - name: quay-instance-url
+      value: "quay.io"
+    - name: quay-account
+      value: "marrober"
+    - name: quay-repository
+      value: "pacman"    
+  pipelineSpec:
+    description: |
+      This pipeline is ideal for building container images from a Containerfile while reducing network traffic.
+
+      _Uses `buildah` to create a container image. It also optionally creates a source image and runs some build-time tests. EC will flag a violation for [`trusted_task.trusted`](https://enterprisecontract.dev/docs/ec-policies/release_policy.html#trusted_task__trusted) if any tasks are added to the pipeline.
+      This pipeline is pushed as a Tekton bundle to [quay.io](https://quay.io/repository/konflux-ci/tekton-catalog/pipeline-docker-build?tab=tags)_
+    params:
+      - name: GIT_REPO
+        type: string
+      - name: GIT_REVISION
+        default: ""
+        type: string
+      - name: GIT_REPO_NAME
+        type: string
+        ## Git signed verification parameters
+      - name: certificate-identity
+        type: string
+      - name: oidc-issuer
+        type: string
+      - name: rekor-url
+        type: string
+      - name: tuf-mirror
+        type: string
+      - name: tuf-root-hash
+        type: string
+        ## Image build parameters
+      - name: PATH_CONTEXT
+        default: .
+        type: string
+      - name: STORAGE_DRIVER
+        type: string
+      - name: TLSVERIFY
+        type: string
+      - name: node_js_image_repo
+        type: string
+      - name: node_js_short_name
+        type: string
+      - name: node_js_image_name
+        type: string
+      - name: node_js_image_tag
+        type: string
+    # - name: VERSION
+    #   default: 16-ubi8
+    #   type: string
+        # OpenShift imagestream URL parameters
+        #
+      - name: image-build-namespace
+        type: string
+      - name: IMAGE_NAME 
+        type: string
+      - name: IMAGE_SHORT_NAME
+        type: string
+        ## Image validation parameters
+      - name: acs_central_endpoint              
+        type: string
+      - name: acs_api_token                     
+        type: string
+      - name: roxctl-output-format             
+        type: string
+        ## Update Argocd application and commit to Github parameters
+      - name: repo_type
+        type: string
+      - name: cd-git-url
+        type: string
+      - name: cd-git-repo-name
+        type: string
+      - name: cd-git-repo-path-to-content-development
+        type: string
+      - name: cd-git-user-name
+        type: string
+      - name: cd-git-user-email
+        type: string
+      - name: cd-git-commit-comment-dev 
+        type: string
+        ## ArgoCD Sync
+      - name: argocd-project-name-development
+        type: string
+      - name: argocd-revision
+        type: string
+      - name: argocd-version
+        type: string
+        ## Push to quay
+      - name: quay-instance-url
+        type: string
+      - name: quay-account                   # Quay account name
+        type: string
+      - name: quay-repository                # Quay repository name
+        type: string
+    results:
+    - description: ""
+      name: IMAGE_URL
+      value: $(tasks.build-image-index.results.IMAGE_URL)
+    - description: ""
+      name: IMAGE_DIGEST
+      value: $(tasks.build-image-index.results.IMAGE_DIGEST)
+    - description: ""
+      name: CHAINS-GIT_URL
+      value: $(tasks.clone-repository.results.url)
+    - description: ""
+      name: CHAINS-GIT_COMMIT
+      value: $(tasks.clone-repository.results.commit)
+    tasks:
+      ##------------------------------------------------------------------
+      # Fetch source to build
+      ##------------------------------------------------------------------
+    - name: fetch-repository
+      params:
+      - name: url
+        value: $(params.GIT_REPO)
+      - name: revision
+        value: $(params.GIT_REVISION)
+      - name: repoName
+        value: $(params.GIT_REPO_NAME)
+      - name: subdirectory
+        value: "."
+      - name: deleteExisting
+        value: "false"
+      taskRef:
+        kind: Task
+        name: git-clone
+      workspaces:
+      - name: output
+        workspace: resources
+    workspaces:
+    - name: workspace
+  taskRunTemplate:
+    serviceAccountName: pipeline
+  workspaces:
+  - name: workspace
+    volumeClaimTemplate:
+      metadata: {}
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: lvms-vg1

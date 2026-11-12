@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/marrober/pacman-konflux.git
     targetRevision: main
-    path: argocd
+    path: config
   destination:
     server: https://kubernetes.default.svc
     namespace: pacman-konflux-ci

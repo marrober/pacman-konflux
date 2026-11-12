@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: pacman-konflux
+  namespace: openshift-gitops
+spec:
+  # Project description
+  description: Trusted development of pacman open source content.
+
+  sourceRepos:
+  - '*'
+  - https://github.com/marrober/pacman-konflux
+  - https://github.com/marrober/pacman-konflux-gitops
+
+  destinations:
+  - server: https://kubernetes.default.svc
+    namespace: '*'
+
+  clusterResourceWhitelist:
+  - group: ''
+    kind: Namespace
+  - group: 'rbac.authorization.k8s.io'
+    kind: ClusterRole
+  - group: 'rbac.authorization.k8s.io'
+    kind: ClusterRoleBinding
+
+  namespaceResourceBlacklist:
+  namespaceResourceWhitelist:
+
+
+  roles:
+  - name: developer
+    groups:
+    - developers
+    policies:
+    - p, proj:pacman:developer, applications, get, *, allow
+    - p, proj:pacman:developer, applications, sync, *, allow  

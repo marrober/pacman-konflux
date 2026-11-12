@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pacman-konflux-config
+  namespace: openshift-gitops
+  labels:
+    app.kubernetes.io/name: pacman
+spec:
+  project: pacman-konflux
+  source:
+    repoURL: https://github.com/marrober/pacman-konflux-gitops.git
+    targetRevision: main
+    path: argocd
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pacman-konflux-ci
+  ignoreDifferences:
+  - group: route.openshift.io
+    kind: Route
+    jsonPointers:
+    - /spec/host
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - CreateNamespace=true
+    - Validate=true

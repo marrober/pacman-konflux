@@ -1,0 +1,7 @@
+apiVersion: pipelinesascode.tekton.dev/v1alpha1
+kind: Repository
+metadata:
+  name: pacman-konflux
+  namespace: pacman-konflux-ci
+spec:
+  url: https://github.com/marrober/pacman-konflux.git

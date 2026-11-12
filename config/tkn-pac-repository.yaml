@@ -4,4 +4,4 @@ metadata:
   name: pacman-konflux
   namespace: pacman-konflux-ci
 spec:
-  url: https://github.com/marrober/pacman-konflux.git
+  url: https://github.com/marrober/pacman-konflux

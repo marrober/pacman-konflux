@@ -8,7 +8,7 @@ metadata:
 spec:
   project: pacman-konflux
   source:
-    repoURL: https://github.com/marrober/pacman-konflux-gitops.git
+    repoURL: https://github.com/marrober/pacman-konflux.git
     targetRevision: main
     path: argocd
   destination:

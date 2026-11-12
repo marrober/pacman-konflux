@@ -6,3 +6,14 @@ resources:
 - argo-project.yaml
 - pacman-konflux-argo.yaml
 - tkn-pac-repository.yaml
+- image-streams/git-init-rhel9.yaml
+
+patches:
+  - target:
+      kind: ImageStream
+      name: git-init-rhel9
+    patch: |-
+      - op: replace
+        path: /metadata/namespace
+        value: pacman-konflux-ci
+

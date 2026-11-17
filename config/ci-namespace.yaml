@@ -4,7 +4,7 @@ metadata:
   name: pacman-konflux-ci
   labels:
     app.kubernetes.io/part-of: pacman-konflux
-    konflux.ci/tenant: "true"
+    konflux-ci.dev/type: tenant
 ---
 # Grant the development team normal Konflux authoring access.
 # Replace this with the real group emitted by your identity provider.

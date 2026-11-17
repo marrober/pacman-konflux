@@ -21,7 +21,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/pacman-konflux/pacman/pacman:{{revision}}
+    value: quay.io/marrober/pacman-konflux/pacman/pacman:{{revision}}
   - name: dockerfile
     value: dockerfile
   - name: path-context
@@ -513,7 +513,7 @@ spec:
     - name: netrc
       optional: true
   taskRunTemplate:
-    serviceAccountName: pipeline
+    serviceAccountName: build-pipeline-pacman
   workspaces:
   - name: workspace
     volumeClaimTemplate:

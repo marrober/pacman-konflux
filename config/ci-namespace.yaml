@@ -2,5 +2,37 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: pacman-konflux-ci
-spec: {}
-status: {}
+  labels:
+    app.kubernetes.io/part-of: pacman-konflux
+    konflux.ci/tenant: "true"
+---
+# Grant the development team normal Konflux authoring access.
+# Replace this with the real group emitted by your identity provider.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pacman-konflux-maintainer
+  namespace: pacman-konflux-ci
+subjects:
+  - kind: User
+    name: mark
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: konflux-maintainer-user-actions
+---
+# Optional: give a small platform/team-admin group full tenant administration.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pacman-konflux-admin
+  namespace: pacman-konflux-ci
+subjects:
+  - kind: User
+    name: mark
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: konflux-admin-user-actions

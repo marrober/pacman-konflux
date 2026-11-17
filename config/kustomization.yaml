@@ -6,7 +6,6 @@ resources:
 - argo-project.yaml
 - pacman-konflux-argo.yaml
 - tkn-pac-repository.yaml
-- image-streams/git-init-rhel9.yaml
 
 patches:
   - target:

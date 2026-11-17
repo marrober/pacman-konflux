@@ -524,6 +524,7 @@ spec:
         resources:
           requests:
             storage: 5Gi
+        storageClassName: lvms-vg1
   - name: git-auth
     secret:
       secretName: '{{ git_auth_secret }}'
